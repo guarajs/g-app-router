@@ -1,0 +1,26 @@
+<polymer-element name="g-app-router" attributes="auto-init">
+	<template>
+	</template>
+	<script>
+		(function(){
+
+			Polymer({
+				auto-init: true,
+
+				ready: function() {
+					var routes = document.querySelector('g-app-route');
+					routes.forEach(function(item){
+						console.log('Route', item);
+					});
+
+					if(this.auto-init)
+					{
+						console.log('Auto Init');
+					}
+				},
+			});
+
+		}());
+
+	</script>
+</polymer-element>
