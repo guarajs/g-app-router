@@ -1,26 +1,63 @@
-<polymer-element name="g-app-router" attributes="auto-init">
+<script src="../director/build/director.js"></script>
+<link rel="import" href="g-app-route.html">
+
+<polymer-element name="g-app-router" attributes="autoInit defaultRoute">
 	<template>
+		<content select="core-pages"></content>
 	</template>
 	<script>
 		(function(){
 
+			var _router = null;
+
+			var _selector = null;
+
+			var _onRouteNotFound = function() {
+				console.log('Route Not Found', arguments);
+			};
+
+			var _loaderFor = function(route) {
+				return function() {
+					console.log('Loading ', route.path, arguments);
+					_selector.selected = route.name;
+				};
+			};
+
 			Polymer({
-				auto-init: true,
+				autoInit: true,
+				defaultRoute: null,
 
 				ready: function() {
-					var routes = document.querySelector('g-app-route');
-					routes.forEach(function(item){
-						console.log('Route', item);
-					});
-
-					if(this.auto-init)
+					_selector = document.querySelector('core-pages');
+					var routes = document.querySelectorAll('g-app-route');
+					if(!routes)
 					{
-						console.log('Auto Init');
+						console.warn('No routes! Please add at least one <g-app-route> to <g-app-router>');
+						return;
+					}
+
+					var map = {};
+					var len = routes.length;
+					for(var i = 0 ; i < len ; i++)
+					{
+						var route = routes[i];
+						if(route.path)
+						{
+							map[route.path] = _loaderFor(route);
+						}
+						else
+						{
+							throw 'All routes require a path';
+						}
+					}
+
+					_router = new Router(map).configure({strict: false, notfound: _onRouteNotFound});
+					if(this.autoInit)
+					{
+						_router.init();
 					}
 				},
 			});
-
 		}());
-
 	</script>
 </polymer-element>
