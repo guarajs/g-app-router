@@ -3,7 +3,7 @@
 
 <polymer-element name="g-app-router" attributes="autoInit defaultRoute">
 	<template>
-		<content select="core-pages"></content>
+		<content select="[selector]"></content>
 	</template>
 	<script>
 		(function(){
@@ -28,7 +28,7 @@
 				defaultRoute: null,
 
 				ready: function() {
-					_selector = document.querySelector('core-pages');
+					_selector = document.querySelector('[selector]');
 					var routes = document.querySelectorAll('g-app-route');
 					if(!routes)
 					{
