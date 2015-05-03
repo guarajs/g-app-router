@@ -57,6 +57,13 @@
 						_router.init();
 					}
 				},
+
+				init: function() {
+					if(!this.autoInit)
+					{
+						_router.init();
+					}
+				},
 			});
 		}());
 	</script>
