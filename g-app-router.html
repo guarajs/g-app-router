@@ -56,6 +56,8 @@
 					{
 						_router.init();
 					}
+
+					this.fire('router-ready');
 				},
 
 				init: function() {
@@ -64,6 +66,10 @@
 						_router.init();
 					}
 				},
+
+				goTo: function(target) {
+					console.log('>>', target);
+				}
 			});
 		}());
 	</script>
