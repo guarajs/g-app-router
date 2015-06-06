@@ -8,27 +8,66 @@
 	<script>
 		(function(){
 
-			var _router = null;
-
+			var _this     = null;
+			var _router   = null;
 			var _selector = null;
+			var _route    = null;
+			var _selected = null;
 
 			var _onRouteNotFound = function() {
-				console.log('Route Not Found', arguments);
+				console.log('[ROUTER] Route Not Found');
+				_router.setRoute(_this.defaultRoute);
 			};
 
 			var _loaderFor = function(route) {
 				return function() {
-					console.log('Loading ', route.path, arguments);
-					_selector.selected = route.name;
+					//console.log('[ROUTER] Loading path:', route.path, ', name:', route.name, ', args:', arguments);
+					if(_selector.selected == route.name)
+					{
+						_bindValuesToSelectedElement();
+					}
+					else
+					{
+						_selector.selected = route.name;
+						_route = route;
+					}
 				};
 			};
 
+			_bindValuesToSelectedElement = function() {
+				//console.log('[ROUTER] Binding data to:', _selected);
+				if(_route)
+				{
+					var map = _route.parse(window.location.hash);
+					for (var key in map)
+					{
+						_selected[key] = map[key];								
+					}
+					if(_selected.on)
+					{
+						_selected.on();					
+					}
+				}
+
+			};
+			
 			Polymer({
 				autoInit: true,
-				defaultRoute: null,
 
-				ready: function() {
+				defaultRoute: null,
+				
+				domReady: function() {
+					console.log('[ROUTER] domReady');
+					_this = this;
 					_selector = document.querySelector('[selector]');
+					_selector.addEventListener('core-select', function(evt){
+						if(evt.detail.isSelected)
+						{
+							_selected = evt.detail.item;
+							_bindValuesToSelectedElement();
+						}
+					});
+
 					var routes = document.querySelectorAll('g-app-route');
 					if(!routes)
 					{
@@ -43,6 +82,7 @@
 						var route = routes[i];
 						if(route.path)
 						{
+							//console.log('[ROUTER] Added', route.path);
 							map[route.path] = _loaderFor(route);
 						}
 						else
@@ -54,22 +94,13 @@
 					_router = new Router(map).configure({strict: false, notfound: _onRouteNotFound});
 					if(this.autoInit)
 					{
-						_router.init();
+						this.init();
 					}
-
-					this.fire('router-ready');
 				},
 
 				init: function() {
-					if(!this.autoInit)
-					{
-						_router.init();
-					}
+					_router.init();
 				},
-
-				goTo: function(target) {
-					console.log('>>', target);
-				}
 			});
 		}());
 	</script>
