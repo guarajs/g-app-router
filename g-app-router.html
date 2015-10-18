@@ -1,8 +1,13 @@
 <script src="../director/build/director.js"></script>
 <link rel="import" href="g-app-route.html">
 
-<polymer-element name="g-app-router" attributes="autoInit defaultRoute">
+<dom-module id="g-app-router">
 	<template>
+		<style>
+			:host {
+				display: block;
+			}
+		</style>
 		<content select="[selector]"></content>
 	</template>
 	<script>
@@ -41,38 +46,44 @@
 					var map = _route.parse(window.location.hash);
 					for (var key in map)
 					{
-						_selected[key] = map[key];								
+						_selected[key] = map[key];
 					}
 					if(_selected.on)
 					{
-						_selected.on();					
+						_selected.on();
 					}
 				}
 
 			};
-			
+
 			Polymer({
-				autoInit: true,
+				is: 'g-app-router',
 
-				defaultRoute: null,
-				
-				domReady: function() {
-					console.log('[ROUTER] domReady');
-					_this = this;
-					_selector = document.querySelector('[selector]');
-					_selector.addEventListener('core-select', function(evt){
-						if(evt.detail.isSelected)
-						{
-							_selected = evt.detail.item;
-							_bindValuesToSelectedElement();
-						}
+				properties: {
+					auto: Boolean,
+					defaultRoute: String,
+				},
+
+				behaviors: [],
+
+				attached: function() {
+					console.log('[ROUTER] attached');
+					this.async(function() {
+						// code that formerly resided in `domReady`
+						this.configure();
 					});
+				},
 
-					var routes = document.querySelectorAll('g-app-route');
-					if(!routes)
+				configure: function() {
+					_this = this;
+
+					/*
+					* Configure all routes declared on the light dom
+					*/
+					var routes = Polymer.dom(this).querySelectorAll('g-app-route')
+					if(!routes || routes.length == 0)
 					{
-						console.warn('No routes! Please add at least one <g-app-route> to <g-app-router>');
-						return;
+						throw 'No routes! Please add at least one <g-app-route> to <g-app-router>';
 					}
 
 					var map = {};
@@ -82,7 +93,7 @@
 						var route = routes[i];
 						if(route.path)
 						{
-							//console.log('[ROUTER] Added', route.path);
+							console.log('[ROUTER] Added', route.path);
 							map[route.path] = _loaderFor(route);
 						}
 						else
@@ -90,6 +101,12 @@
 							throw 'All routes require a path';
 						}
 					}
+
+					_selector = this.querySelector('[selector]');
+					_selector.addEventListener('iron-select', function(evt){
+						_selected = evt.detail.item;
+						_bindValuesToSelectedElement();
+					});
 
 					_router = new Router(map).configure({strict: false, notfound: _onRouteNotFound});
 					if(this.autoInit)
@@ -101,7 +118,8 @@
 				init: function() {
 					_router.init();
 				},
+
 			});
 		}());
 	</script>
-</polymer-element>
+</dom-module>
