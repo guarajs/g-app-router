@@ -26,34 +26,21 @@
 
 			var _loaderFor = function(route) {
 				return function() {
-					//console.log('[ROUTER] Loading path:', route.path, ', name:', route.name, ', args:', arguments);
-					if(_selector.selected == route.name)
+					console.log('[ROUTER] Loading path:', route.path, ', name:', route.name, ', args:', arguments);
+					if(_route
+							&& _route.page.off
+							/*&& _route.name != route.name*/)
 					{
-						_bindValuesToSelectedElement();
+						_route.page.off();						
 					}
-					else
+					_selector.selected = route.name;
+					if(route.page.on)
 					{
-						_selector.selected = route.name;
-						_route = route;
+						var map = route.parse(window.location.hash);
+						route.page.on(map);
 					}
+					_route = route;
 				};
-			};
-
-			_bindValuesToSelectedElement = function() {
-				//console.log('[ROUTER] Binding data to:', _selected);
-				if(_route)
-				{
-					var map = _route.parse(window.location.hash);
-					for (var key in map)
-					{
-						_selected[key] = map[key];
-					}
-					if(_selected.on)
-					{
-						_selected.on();
-					}
-				}
-
 			};
 
 			Polymer({
@@ -67,7 +54,7 @@
 				behaviors: [],
 
 				attached: function() {
-					console.log('[ROUTER] attached');
+					//console.log('[ROUTER] attached');
 					this.async(function() {
 						// code that formerly resided in `domReady`
 						this.configure();
@@ -80,10 +67,19 @@
 					/*
 					* Configure all routes declared on the light dom
 					*/
-					var routes = Polymer.dom(this).querySelectorAll('g-app-route')
+					var routes = Polymer.dom(this).querySelectorAll('g-app-route');
 					if(!routes || routes.length == 0)
 					{
 						throw 'No routes! Please add at least one <g-app-route> to <g-app-router>';
+					}
+
+					var pageByName = {};
+					var pages = Polymer.dom(this).querySelectorAll('[page]');
+					for(var i = 0 ; i < pages.length ; i++)
+					{
+						var page = pages[i];
+						var name = page.getAttribute('page');
+						pageByName[name] = page;
 					}
 
 					var map = {};
@@ -93,6 +89,8 @@
 						var route = routes[i];
 						if(route.path)
 						{
+							var page = pageByName[route.name];
+							route.page = page;
 							console.log('[ROUTER] Added', route.path);
 							map[route.path] = _loaderFor(route);
 						}
@@ -103,12 +101,7 @@
 					}
 
 					_selector = this.querySelector('[selector]');
-					_selector.addEventListener('iron-select', function(evt){
-						_selected = evt.detail.item;
-						_bindValuesToSelectedElement();
-					});
-
-					_router = new Router(map).configure({strict: false, notfound: _onRouteNotFound});
+					_router   = new Router(map).configure({strict: false, notfound: _onRouteNotFound});
 					if(this.autoInit)
 					{
 						this.init();

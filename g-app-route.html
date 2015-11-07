@@ -16,6 +16,7 @@
 			},
 
 			parse: function(hash) {
+				//console.log('Route ['+this.name + ' - ' + this.path+']: ' + hash);
 				var result = {};
 				var idx  = this.path.indexOf(':');
 				if(idx > 0)
