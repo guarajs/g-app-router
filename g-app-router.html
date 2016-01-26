@@ -31,7 +31,7 @@
 							&& _route.page.off
 							/*&& _route.name != route.name*/)
 					{
-						_route.page.off();						
+						_route.page.off();
 					}
 					_selector.selected = route.name;
 					if(route.page.on)
@@ -47,7 +47,7 @@
 				is: 'g-app-router',
 
 				properties: {
-					auto: Boolean,
+					autoInit: Boolean,
 					defaultRoute: String,
 				},
 
